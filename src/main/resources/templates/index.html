@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Weather Demo</title>
+</head>
+<body>
+    <div style="margin-bottom: 10px">
+        <select name="countryList" id="countryList" data-placeholder="Please select the city">
+            <option></option>
+            <option th:each="country : ${countryList}" th:text="${country}" th:selected="${weather}!=null ? ${weather.city} eq ${country}:false">${country}</option>
+        </select>
+    </div>
+
+    <div class="divTable blueTable">
+        <div class="divTableBody">
+            <div class="divTableRow">
+                <div class="divTableCell">City</div>
+                <div class="divTableCell" id="city"></div>
+            </div>
+            <div class="divTableRow">
+                <div class="divTableCell" >Updated time</div>
+                <div class="divTableCell" id="time"></div>
+            </div>
+            <div class="divTableRow">
+                <div class="divTableCell" >Weather</div>
+                <div class="divTableCell" id="weather"></div>
+            </div>
+            <div class="divTableRow">
+                <div class="divTableCell" >Temperature</div>
+                <div class="divTableCell" id="temperature"></div>
+            </div>
+            <div class="divTableRow">
+                <div class="divTableCell" >Wind</div>
+                <div class="divTableCell" id="wind"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="/static/js/jquery-3.4.1.js"></script>
+<script type="text/javascript" src="/static/js/weather.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/weather.css">
+</html>
