@@ -20,7 +20,6 @@ There is two way to deploy:
 # Download Project
 ```
 git clone https://github.com/scriptboykiller/WeatherQuery.git
-
 ```
 Project layer：
 
@@ -34,16 +33,13 @@ my-site
     └── pom.xml
         
 ```
-### JAR Deployment
-use maven to make package
+### JAR deployment
+use maven to build package
 
 ```
 mvn clean package
 ```
-
 find jar under **target** folder：
-
-
 ```
 java -jar WeatherDemo-0.0.1-SNAPSHOT.jar
 ```
@@ -51,7 +47,6 @@ java -jar WeatherDemo-0.0.1-SNAPSHOT.jar
 ```
 mvn package
 ```
-
 Build docker image
 ```
 docker build -t weatherdemo .
