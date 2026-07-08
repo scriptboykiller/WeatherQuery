@@ -32,3 +32,17 @@ Do not:
 4. Implement SQL rewrite rules.
 5. Modify business service modules.
 6. Rewrite the whole existing scanner.
+
+Please update Phase 1.5 SqlParserSanityChecker.prepareForParser only.
+
+Before calling JSqlParser:
+1. Convert named parameters like :modelId to ?
+2. Convert indexed positional parameters like ?1, ?2, ?12 to ?
+3. Keep normal JDBC ? unchanged
+4. Do not change original effectiveSqlText
+5. Only change parserSql
+
+Example:
+where a = :name and b = ?1 and c = ?
+should become:
+where a = ? and b = ? and c = ?
