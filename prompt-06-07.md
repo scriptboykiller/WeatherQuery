@@ -81,3 +81,11 @@ The .github directory must be located at the root of this project, beside the ex
 Do not inspect or scan any other projects in the IntelliJ workspace.
 Do not infer conventions from sibling projects.
 Only use the current SQL PostgreSQL Validator project as context.
+
+<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+        <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level){INFO=blue,WARN=yellow,ERROR=red} [%thread] %logger{0} - %msg%n</pattern>
+        <charset>UTF-8</charset>
+    </encoder>
+</appender>
+
