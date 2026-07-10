@@ -85,7 +85,12 @@ Only use the current SQL PostgreSQL Validator project as context.
 <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
         <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level){INFO=blue,WARN=yellow,ERROR=red} [%thread] %logger{0} - %msg%n</pattern>
+
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+        <pattern>%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5pid){magenta} %clr(%-5level){INFO=blue,WARN=yellow,ERROR=red} --- [%X{spring.application.name:-}] [%thread] %logger{0} - %msg%n</pattern>
         <charset>UTF-8</charset>
     </encoder>
 </appender>
+
 
