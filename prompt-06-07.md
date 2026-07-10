@@ -69,3 +69,15 @@ Requirements:
 8. Do NOT create HANDOFF.md yet.
 9. Do NOT modify production source code.
 10. Show me the proposed content before writing the file.
+
+
+The generated instructions are intended only for the current SQL PostgreSQL Validator project.
+
+Create the file at:
+.github/copilot-instructions.md
+
+The .github directory must be located at the root of this project, beside the existing .git directory.
+
+Do not inspect or scan any other projects in the IntelliJ workspace.
+Do not infer conventions from sibling projects.
+Only use the current SQL PostgreSQL Validator project as context.
