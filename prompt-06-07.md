@@ -46,3 +46,26 @@ Example:
 where a = :name and b = ?1 and c = ?
 should become:
 where a = ? and b = ? and c = ?
+
+----------
+Create a repository-level GitHub Copilot instruction file for this project.
+
+Requirements:
+1. Create the directory `.github` at the Git repository root if it does not exist.
+2. Create `.github/copilot-instructions.md`.
+3. First inspect the project structure and existing coding conventions.
+4. Generate only concise, stable, repository-wide instructions.
+5. Include:
+   - actual technology stack detected from the project
+   - existing coding style and naming conventions
+   - minimal-change principle
+   - do not change business behavior unless explicitly requested
+   - do not perform unrelated refactoring
+   - follow existing project patterns before introducing new abstractions
+   - keep changes small and reviewable
+   - do not guess project facts
+6. Do NOT include temporary task status.
+7. Do NOT include current migration progress.
+8. Do NOT create HANDOFF.md yet.
+9. Do NOT modify production source code.
+10. Show me the proposed content before writing the file.
