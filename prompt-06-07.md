@@ -1,96 +1,102 @@
+先用 **Ask 模式读**，不要一上来 Plan 或 Agent。
+
+你现在应该分三步走：
+
+## 第一步：Ask 模式，只让它理解文档
+
+在 Copilot Chat 里选 **Ask**，发这个：
+
+```text
 Please read these two documents first:
 
-docs/06_SQL_Text_Sanity_Check_Design.md
-docs/07_SQL_Text_Sanity_Check_Code.md
+docs/10_Phase2_PostgreSQL_Validation_Final_Design.md
+docs/11_Phase2_PostgreSQL_Validation_Code_Guide.md
 
-This is an incremental update to an existing working Java project.
+Do not modify any code yet.
 
-Do not rewrite the existing project.
-Do not redesign the scanner.
-Do not modify business service modules.
+This project is already a working JDK 17 Spring Boot CLI tool.
+Phase 1 and Phase 1.5 are already implemented and tested.
 
-The goal is to add Phase 1.5 SQL Text Sanity Check into the existing sql-postgres-validator project.
+Your task now is only to understand:
+1. The Phase 2 target architecture.
+2. The required validation phases:
+   - validation-explain
+   - validation-select-smoke
+   - validation-dml-safety
+   - real-execution
+3. The required reports:
+   - sql-binding-plan.csv
+   - sql-execution-report.csv
+4. The existing package structure under org.rosetta.sqlvalidator.
+5. The safety rules and coding standards.
 
-We are using JDK 17.
+After reading, summarize your understanding and list the files you think would need to be added or changed.
+Do not implement anything yet.
+```
 
-Please implement Phase 1.5 by following docs/07_SQL_Text_Sanity_Check_Code.md.
+这一步目的：**让它先读懂，不动代码。**
 
-Apply the code into the existing project structure.
+---
 
-Required changes:
-1. Add JSqlParser dependency to pom.xml.
-2. Add the new package:
-   com.company.sqlvalidator.sanity
-3. Add the classes described in 07_SQL_Text_Sanity_Check_Code.md.
-4. Add optional sanity.input and sanity.outputDir properties to application.properties.
-5. Keep existing Phase 1 scanner code unchanged unless compilation requires a minor compatible change.
+## 第二步：Plan 模式，让它出实施计划
 
-Do not:
-1. Connect to H2.
-2. Connect to PostgreSQL.
-3. Generate JUnit.
-4. Implement SQL rewrite rules.
-5. Modify business service modules.
-6. Rewrite the whole existing scanner.
+等 Ask 总结没问题后，再切 **Plan**，发：
 
-Please update Phase 1.5 SqlParserSanityChecker.prepareForParser only.
+```text
+Now create an implementation plan for Phase 2.1 only.
 
-Before calling JSqlParser:
-1. Convert named parameters like :modelId to ?
-2. Convert indexed positional parameters like ?1, ?2, ?12 to ?
-3. Keep normal JDBC ? unchanged
-4. Do not change original effectiveSqlText
-5. Only change parserSql
+Scope:
+- Implement validation-explain only.
+- Generate sql-binding-plan.csv.
+- Generate sql-execution-report.csv.
+- Add PostgreSQL EXPLAIN validation.
+- Add basic Binding Plan generation.
+- Add identifierStrategy configuration.
+- Add SQLState-based error classification.
 
-Example:
-where a = :name and b = ?1 and c = ?
-should become:
-where a = ? and b = ? and c = ?
+Do not implement:
+- validation-select-smoke
+- validation-dml-safety
+- real-execution
+- automatic SQL rewrite
+- business code modification
 
-----------
-Create a repository-level GitHub Copilot instruction file for this project.
+Please provide a step-by-step plan and the exact files to add or modify.
+Do not change code yet.
+```
 
-Requirements:
-1. Create the directory `.github` at the Git repository root if it does not exist.
-2. Create `.github/copilot-instructions.md`.
-3. First inspect the project structure and existing coding conventions.
-4. Generate only concise, stable, repository-wide instructions.
-5. Include:
-   - actual technology stack detected from the project
-   - existing coding style and naming conventions
-   - minimal-change principle
-   - do not change business behavior unless explicitly requested
-   - do not perform unrelated refactoring
-   - follow existing project patterns before introducing new abstractions
-   - keep changes small and reviewable
-   - do not guess project facts
-6. Do NOT include temporary task status.
-7. Do NOT include current migration progress.
-8. Do NOT create HANDOFF.md yet.
-9. Do NOT modify production source code.
-10. Show me the proposed content before writing the file.
+这一步目的：**确认它不会一次性把 2.2、2.3、2.4 全做了。**
 
+---
 
-The generated instructions are intended only for the current SQL PostgreSQL Validator project.
+## 第三步：Agent 模式，才让它改代码
 
-Create the file at:
-.github/copilot-instructions.md
+Plan 你看完没问题后，才用 **Agent**：
 
-The .github directory must be located at the root of this project, beside the existing .git directory.
+```text
+Implement Phase 2.1 validation-explain only according to the approved plan.
 
-Do not inspect or scan any other projects in the IntelliJ workspace.
-Do not infer conventions from sibling projects.
-Only use the current SQL PostgreSQL Validator project as context.
+Hard constraints:
+1. Do not rewrite existing Phase 1 or Phase 1.5 logic.
+2. Do not modify business service modules.
+3. Do not implement select smoke, DML safety, or real execution.
+4. Do not auto-fix SQL.
+5. Keep JDK 17 and Spring Boot CLI architecture.
+6. Follow existing package structure and coding style.
+7. Use SLF4J logging.
+8. Generate both:
+   - sql-binding-plan.csv
+   - sql-execution-report.csv
+9. Make it runnable by:
+   --validator.phase=validation-explain
+```
 
-<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-        <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level){INFO=blue,WARN=yellow,ERROR=red} [%thread] %logger{0} - %msg%n</pattern>
+结论就是：
 
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-        <pattern>%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5pid){magenta} %clr(%-5level){INFO=blue,WARN=yellow,ERROR=red} --- [%X{spring.application.name:-}] [%thread] %logger{0} - %msg%n</pattern>
-        <charset>UTF-8</charset>
-    </encoder>
-</appender>
+```text
+Ask 读文档
+Plan 出计划
+Agent 改代码
+```
 
-
+你现在这一步，**先用 Ask**。
