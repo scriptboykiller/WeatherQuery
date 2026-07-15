@@ -91,3 +91,174 @@ JdbcTemplate 调用参数
 跨文件类型
 
 这个方法跑通以后，你就已经从“猜参数类型”升级成“读取真实源码类型”了。
+
+
+
+可以。你现在已经有：
+
+validator:
+  inventory:
+    source-roots:
+      - ../50718-DMRService
+      - ../50718-WorkflowService
+      - ../50718-AuthService
+      - ../50718-EntitlementService
+      - ../50718-APIIntegrationService
+      - ../50718-GraphAPIService
+
+所以最小 MVP 不需要再增加 serviceName -> path 映射。
+
+直接遍历现有的 source-roots，找到：
+
+sourceRoot + CSV里的filePath
+
+哪个真实存在，就返回哪个。
+
+1. 在 ProjectPathResolver 里加这个方法
+
+package org.rosetta.sqlvalidator.common.util;
+
+import org.rosetta.sqlvalidator.config.ValidatorProperties;
+import org.rosetta.sqlvalidator.inventory.model.NativeSqlRecord;
+import org.springframework.stereotype.Component;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+
+@Component
+public class ProjectPathResolver {
+
+    private final ValidatorProperties validatorProperties;
+
+    public ProjectPathResolver(final ValidatorProperties validatorProperties) {
+        this.validatorProperties = validatorProperties;
+    }
+
+    public Optional<Path> resolveJavaSourceFile(final NativeSqlRecord record) {
+        if (record == null
+                || record.getFilePath() == null
+                || record.getFilePath().isBlank()) {
+            return Optional.empty();
+        }
+
+        final Path relativeFilePath = Path.of(record.getFilePath());
+
+        return validatorProperties.getInventory()
+                .getSourceRoots()
+                .stream()
+                .map(Path::of)
+                .map(sourceRoot -> sourceRoot
+                        .resolve(relativeFilePath)
+                        .normalize()
+                        .toAbsolutePath())
+                .filter(Files::isRegularFile)
+                .findFirst();
+    }
+}
+
+它会依次尝试：
+
+../50718-DMRService/src/main/java/...
+../50718-WorkflowService/src/main/java/...
+../50718-AuthService/src/main/java/...
+../50718-EntitlementService/src/main/java/...
+../50718-APIIntegrationService/src/main/java/...
+../50718-GraphAPIService/src/main/java/...
+
+你的这条 CSV：
+
+src\main\java\com\sc\rosetta\api\integration\repository\AxonExceptionRepository.java
+
+最终应该定位到：
+
+../50718-APIIntegrationService/
+src/main/java/com/sc/rosetta/api/integration/repository/AxonExceptionRepository.java
+
+
+---
+
+2. DefaultJavaSourceParameterResolver 中这样调用
+
+先注入：
+
+private final ProjectPathResolver projectPathResolver;
+
+public DefaultJavaSourceParameterResolver(
+        final MockValueFactory mockValueFactory,
+        final ProjectPathResolver projectPathResolver) {
+
+    this.mockValueFactory = mockValueFactory;
+    this.projectPathResolver = projectPathResolver;
+}
+
+然后使用：
+
+final Optional<Path> javaSourceFile =
+        projectPathResolver.resolveJavaSourceFile(record);
+
+if (javaSourceFile.isEmpty()) {
+    return Collections.emptyMap();
+}
+
+再把真实路径传给 JavaParser：
+
+final CompilationUnit compilationUnit =
+        StaticJavaParser.parse(javaSourceFile.get());
+
+
+---
+
+3. ValidatorProperties 只需确认已有这个结构
+
+如果当前已有，就不用改：
+
+public static class Inventory {
+
+    private List<String> sourceRoots = new ArrayList<>();
+
+    public List<String> getSourceRoots() {
+        return sourceRoots;
+    }
+
+    public void setSourceRoots(final List<String> sourceRoots) {
+        this.sourceRoots = sourceRoots;
+    }
+}
+
+外层：
+
+private Inventory inventory = new Inventory();
+
+public Inventory getInventory() {
+    return inventory;
+}
+
+public void setInventory(final Inventory inventory) {
+    this.inventory = inventory;
+}
+
+4. 建议加一条日志
+
+找不到文件时：
+
+LOGGER.warn(
+        "Java source file not found. sqlId={}, filePath={}",
+        record.getId(),
+        record.getFilePath());
+
+找到时调试：
+
+LOGGER.debug(
+        "Java source file resolved. sqlId={}, sourceFile={}",
+        record.getId(),
+        javaSourceFile.get());
+
+这个版本最小，不改 CSV，不增加新配置，也不依赖 serviceName。只复用你 Phase 1 已经配置好的 source-roots。
+
+
+
+
+
+
+
