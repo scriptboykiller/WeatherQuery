@@ -1,0 +1,93 @@
+可以。你先写一个最小版 JavaParser 方法，只解决一件事：
+
+> 根据 filePath + methodName + @Param 名称，拿到真实 Java 参数类型。
+
+
+
+先不搞反射，不搞重载，不搞跨类。
+
+public Optional<String> resolveParameterType(
+        final Path javaFile,
+        final String methodName,
+        final String sqlParameterName) {
+
+    try {
+        final CompilationUnit compilationUnit = StaticJavaParser.parse(javaFile);
+
+        return compilationUnit.findAll(MethodDeclaration.class).stream()
+                .filter(method -> method.getNameAsString().equals(methodName))
+                .flatMap(method -> method.getParameters().stream())
+                .filter(parameter -> matchesParamName(parameter, sqlParameterName))
+                .map(parameter -> parameter.getType().asString())
+                .findFirst();
+
+    } catch (IOException exception) {
+        return Optional.empty();
+    }
+}
+
+private boolean matchesParamName(
+        final Parameter parameter,
+        final String sqlParameterName) {
+
+    final Optional<AnnotationExpr> paramAnnotation =
+            parameter.getAnnotationByName("Param");
+
+    if (paramAnnotation.isPresent()
+            && paramAnnotation.get().isSingleMemberAnnotationExpr()) {
+
+        final String annotationValue = paramAnnotation.get()
+                .asSingleMemberAnnotationExpr()
+                .getMemberValue()
+                .toString()
+                .replace("\"", "");
+
+        return annotationValue.equals(sqlParameterName);
+    }
+
+    return parameter.getNameAsString().equals(sqlParameterName);
+}
+
+例如源码：
+
+List<Model> findByFields(
+        @Param("fieldNames") final List<String> fieldNames,
+        @Param("ownerId") final UUID ownerId);
+
+调用：
+
+final Optional<String> type = resolveParameterType(
+        Path.of("DataModelRepository.java"),
+        "findByFields",
+        "fieldNames");
+
+结果：
+
+List<String>
+
+然后你在原来的代码里这样用：
+
+final Optional<String> javaType =
+        resolveParameterType(
+                Path.of(record.getFilePath()),
+                record.getMethodName(),
+                parameterName);
+
+if (javaType.isPresent()) {
+    // HIGH confidence
+} else {
+    // 再走原来的名字猜测逻辑，LOW confidence
+}
+
+先做到这个就够了。
+
+暂时不要处理：
+
+方法重载
+?1 / ?2
+EntityManager setParameter
+JdbcTemplate 调用参数
+反射
+跨文件类型
+
+这个方法跑通以后，你就已经从“猜参数类型”升级成“读取真实源码类型”了。
