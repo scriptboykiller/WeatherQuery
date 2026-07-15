@@ -1,0 +1,74 @@
+这个报错不是你的源码有问题，而是 JavaParser 当前按较低 Java 版本解析，但业务代码里用了 Text Block """。
+
+控制台已经说明了：
+
+Text Block Literals are not supported.
+This feature is supported starting from JAVA_15 language level.
+
+你们现在是 JDK 17，所以最小修复就是：在解析前把 JavaParser 的语言级别设置为 Java 17。
+
+在启动类初始化一次即可：
+
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.StaticJavaParser;
+import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class JavaParserConfiguration {
+
+    @PostConstruct
+    public void configureJavaParser() {
+        StaticJavaParser.getParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+    }
+}
+
+建议放到：
+
+org.rosetta.sqlvalidator.config.JavaParserConfiguration
+
+或者更简单，直接在主启动类 main() 调用：
+
+public static void main(final String[] args) {
+    StaticJavaParser.getParserConfiguration()
+            .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+
+    SpringApplication.run(SqlPostgresValidatorApplication.class, args);
+}
+
+我更推荐第一种 @Configuration + @PostConstruct，结构更清楚。
+
+然后你现有代码：
+
+final CompilationUnit compilationUnit =
+        StaticJavaParser.parse(javaFile);
+
+不用改。
+
+另外，解析失败时不要让整批 365 条终止。你这个方法里要兜底：
+
+} catch (final Exception exception) {
+    LOGGER.warn(
+            "Failed to parse Java source file. file={}, reason={}",
+            javaFile,
+            exception.getMessage());
+
+    return Optional.empty();
+}
+
+这样行为就是：
+
+JavaParser 成功 -> 使用真实 Java 类型
+JavaParser 失败 -> 返回 empty，继续原有 heuristic fallback
+
+你现在先做这两个修改：
+
+1. 设置 JavaParser LanguageLevel.JAVA_17
+
+
+2. 解析异常只记录 warning，不中断整个验证
+
+
+
+重新运行后，截图中这些 Text Block Literals are not supported 应该就没有了。
