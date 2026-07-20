@@ -1,0 +1,21 @@
+validator:
+  # New independent phase: performance-report
+  performance-report:
+    enabled: false
+    tool-jar: ./tools/sql-performance-comparator.jar
+    tool-config: ./config/performance-tool.yml
+    cross-db-baseline-input: ./output/sql-select-baseline.csv
+    cross-db-comparison-input: ./output/sql-select-comparison.csv
+    request-directory: ./output/performance/requests
+    report-directory: ./output/performance/reports
+    result-output: ./output/sql-performance-report.csv
+    top-slowest: 20
+    default-sample-index: 1
+    require-result-match: true
+    timeout-seconds: 180
+    java-command:
+    include-sql-ids: []
+
+  excel-report:
+    cross-database-sheet-name: Cross DB Validation
+    performance-result-input: ./output/sql-performance-report.csv

@@ -1,0 +1,13 @@
+{
+  "batch": 6,
+  "scope": "Excel third sheet + optional performance-report integration",
+  "result_json_contract": {
+    "responseVersion": "v2",
+    "caseId": "SQL-001",
+    "status": "SUCCESS",
+    "htmlReport": "index.html",
+    "errorCode": "",
+    "errorMessage": ""
+  },
+  "file_count": 39
+}
