@@ -1,0 +1,55 @@
+# Replace placeholders locally. Do not publish real credentials.
+validator:
+  phase: inventory
+
+  postgres:
+    jdbc-url: "jdbc:postgresql://POSTGRES_HOST:5432/POSTGRES_DATABASE"
+    username: "POSTGRES_USERNAME"
+    password: "POSTGRES_PASSWORD"
+    schema: ""
+    search-path: ""
+
+  cross-database:
+    mode: CAPTURE_BASELINE
+    inventory-input: "./output/sql-inventory.csv"
+    binding-plan-input: "./output/sql-binding-plan.csv"
+    execution-input: "./output/sql-execution-report.csv"
+    baseline-input: "./baseline/sql-select-baseline.csv"
+    baseline-output: "./baseline/sql-select-baseline.csv"
+    comparison-output: "./output/sql-select-comparison.csv"
+    baseline-run-id: ""
+    normalization-version: "v1"
+    fail-if-baseline-exists: true
+    source:
+      database-type: H2
+      jdbc-url: "jdbc:h2:tcp://H2_HOST/H2_DATABASE;H2_CONNECTION_PARAMETERS"
+      username: "H2_USERNAME"
+      password: "H2_PASSWORD"
+      schema: ""
+    select-sample-size: 3
+    collection-sample-size: 1
+    prefer-non-null-values: true
+    distinct-parameter-tuples: true
+    max-select-rows: 1000
+    statement-timeout-ms: 5000
+
+  performance-report:
+    enabled: false
+    tool-jar: "./tools/sql-performance-comparator.jar"
+    tool-config: "./config/performance-tool.yml"
+    cross-db-baseline-input: "./baseline/sql-select-baseline.csv"
+    cross-db-comparison-input: "./output/sql-select-comparison.csv"
+    request-directory: "./output/performance/requests"
+    report-directory: "./output/performance/reports"
+    result-output: "./output/sql-performance-report.csv"
+    top-slowest: 20
+    default-sample-index: 1
+    require-result-match: true
+    timeout-seconds: 180
+    include-sql-ids: []
+
+logging:
+  file:
+    name: "./logs/sql-postgres-validator.log"
+  level:
+    root: INFO

@@ -1,0 +1,7 @@
+Product: SQL PostgreSQL Validator
+Version: TO_BE_SET_DURING_PACKAGING
+Java: 17
+Cross DB Normalization Version: v1
+Performance Request Version: v2
+Performance Result Version: v2
+Performance Comparator: OPTIONAL - NOT INCLUDED

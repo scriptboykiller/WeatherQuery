@@ -1,0 +1,16 @@
+# Optional comparator configuration. Used only after its JAR is delivered.
+performance-tool:
+  h2:
+    jdbc-url: "jdbc:h2:tcp://H2_HOST/H2_DATABASE;H2_CONNECTION_PARAMETERS"
+    username: "H2_USERNAME"
+    password: "H2_PASSWORD"
+    schema: ""
+  postgres:
+    jdbc-url: "jdbc:postgresql://POSTGRES_HOST:5432/POSTGRES_DATABASE"
+    username: "POSTGRES_USERNAME"
+    password: "POSTGRES_PASSWORD"
+    schema: ""
+  execution:
+    warmup-count: 1
+    measured-run-count: 3
+    timeout-seconds: 120
