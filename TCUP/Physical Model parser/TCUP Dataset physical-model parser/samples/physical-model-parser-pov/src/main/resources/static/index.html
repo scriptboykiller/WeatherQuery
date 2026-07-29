@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCUP Physical Model Parser</title>
+  <link rel="stylesheet" href="/physical-model-parser.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header>
+      <h1>TCUP Physical Model Parser</h1>
+      <p>Extract unique leaf attribute paths from pasted structured input.</p>
+    </header>
+
+    <section class="parser-card" aria-label="Physical model parser">
+      <label for="sourceType">Source type</label>
+      <select id="sourceType" name="sourceType">
+        <option value="JSON">JSON</option>
+        <option value="JSON_SCHEMA">JSON Schema</option>
+        <option value="XML">XML</option>
+        <option value="XSD">XML Schema (XSD)</option>
+      </select>
+
+      <label for="content">Source content</label>
+      <textarea id="content" name="content" rows="18" spellcheck="false" placeholder="Paste JSON, XML, JSON Schema, or XSD here"></textarea>
+
+      <div class="actions">
+        <button id="run" type="button">Run</button>
+        <button id="clear" type="button" class="secondary">Clear</button>
+      </div>
+      <p id="status" class="status" role="status" hidden></p>
+    </section>
+
+    <section id="results" class="results" hidden aria-live="polite">
+      <h2 id="resultTitle">Physical Models: 0</h2>
+      <div id="warnings" class="warnings" hidden></div>
+      <table>
+        <thead><tr><th scope="col">#</th><th scope="col">Attribute path</th></tr></thead>
+        <tbody id="attributeRows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="/physical-model-parser.js"></script>
+</body>
+</html>

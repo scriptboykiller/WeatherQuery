@@ -1,0 +1,5 @@
+com/rosetta/tcup/physicalmodel/parser/XmlPhysicalModelParserTest.class
+com/rosetta/tcup/physicalmodel/parser/XsdPhysicalModelParserTest.class
+com/rosetta/tcup/physicalmodel/parser/JsonSchemaPhysicalModelParserTest.class
+com/rosetta/tcup/physicalmodel/api/PhysicalModelControllerTest.class
+com/rosetta/tcup/physicalmodel/parser/JsonPhysicalModelParserTest.class
