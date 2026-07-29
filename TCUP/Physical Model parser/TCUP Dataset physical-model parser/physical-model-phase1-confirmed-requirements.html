@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Physical Model Attribute 第一阶段需求基线</title>
+<style>
+  :root {
+    --bg:#f5f7fb; --card:#fff; --text:#1f2937; --muted:#667085;
+    --line:#e4e7ec; --blue:#2563eb; --indigo:#4338ca;
+    --blue-soft:#eff6ff; --green:#15803d; --green-soft:#f0fdf4;
+    --amber:#b45309; --amber-soft:#fffbeb; --red:#b42318;
+    --code:#101828;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);line-height:1.65;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  }
+  .page{max-width:1180px;margin:auto;padding:36px 22px 64px}
+  .hero{
+    color:#fff;padding:34px 38px;border-radius:20px;
+    background:linear-gradient(135deg,var(--blue),var(--indigo));
+    box-shadow:0 18px 45px rgba(37,99,235,.20)
+  }
+  .hero h1{margin:0 0 10px;font-size:31px;line-height:1.25}
+  .hero p{margin:0;max-width:920px;opacity:.95}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+  .metric{padding:14px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22)}
+  .metric strong{display:block;font-size:23px}.metric span{font-size:13px;opacity:.9}
+  .section{margin-top:26px}
+  .title{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:23px}
+  .badge{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-weight:800}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 5px 18px rgba(16,24,40,.05);padding:22px 24px
+  }
+  .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center}
+  .flow-box{padding:17px;text-align:center;border:1px solid var(--line);border-radius:13px;background:#f8fafc;font-weight:800}
+  .arrow{font-size:23px;color:var(--blue)}
+  .format-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .format{
+    padding:18px;border-radius:14px;border:1px solid var(--line);background:#fff;
+  }
+  .format h3{margin:0 0 5px}.format p{margin:0;color:var(--muted);font-size:14px}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .rule{
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;
+    display:flex;gap:12px;align-items:flex-start
+  }
+  .rule-no{
+    width:30px;height:30px;min-width:30px;border-radius:50%;display:grid;place-items:center;
+    background:var(--green-soft);color:var(--green);font-weight:900
+  }
+  .rule h3{margin:0 0 4px;font-size:16px}.rule p{margin:0;color:var(--muted);font-size:14px}
+  .example-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:18px}
+  .example-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .example-head h3{margin:0}.status{padding:4px 9px;border-radius:999px;font-size:12px;font-weight:800;background:var(--green-soft);color:var(--green)}
+  .example-body{padding:18px 20px}
+  .example-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+  .panel{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .panel-title{padding:9px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:800;color:#475467}
+  pre{margin:0;padding:14px;overflow:auto;background:var(--code);color:#e5eefc;font:13px/1.58 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .note{margin-top:13px;padding:11px 13px;border-left:4px solid #22c55e;border-radius:9px;background:var(--green-soft);color:#166534}
+  .scope{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .scope-box{padding:18px;border-radius:14px;border:1px solid var(--line)}
+  .scope-box h3{margin-top:0}.in{background:var(--green-soft)}.out{background:var(--amber-soft)}
+  .scope ul{margin:0;padding-left:20px}
+  .table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px}
+  table{width:100%;border-collapse:collapse;min-width:850px}
+  th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f8fafc;color:#475467;font-size:13px}tr:last-child td{border-bottom:0}
+  code.inline{padding:2px 6px;border-radius:6px;background:#eef2ff;color:#3730a3;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .decision{
+    background:linear-gradient(180deg,#ffffff,#f8fbff);
+    border:1px solid #bfdbfe;border-radius:16px;padding:22px 24px
+  }
+  .decision strong{color:#1d4ed8}
+  .footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+  .print{position:fixed;right:22px;bottom:22px;border:0;border-radius:999px;padding:12px 18px;background:#111827;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+  @media(max-width:820px){
+    .summary,.format-grid,.rules,.scope,.example-grid{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);text-align:center}
+  }
+  @media print{
+    body{background:#fff}.page{max-width:none;padding:0}.hero,.card,.example-card{box-shadow:none}
+    .print{display:none}.example-card,.rule{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <h1>Physical Model 第一阶段需求基线</h1>
+  <p>
+    本文展示目前已经确认的第一阶段范围：从 JSON、XML、JSON Schema 和 XML Schema（XSD）
+    中提取业务结构的叶子 Attribute Path。本文是已确认需求，不包含待确认的问题。
+  </p>
+  <div class="summary">
+    <div class="metric"><strong>4</strong><span>支持的输入格式</span></div>
+    <div class="metric"><strong>Leaf Only</strong><span>仅输出叶子属性</span></div>
+    <div class="metric"><strong>.</strong><span>统一路径分隔符</span></div>
+    <div class="metric"><strong>[]</strong><span>数组/重复结构标记</span></div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="card">
+    <h2 class="title">第一阶段目标 <span class="badge">MVP</span></h2>
+    <div class="flow">
+      <div class="flow-box">JSON / XML / Schema 输入</div>
+      <div class="arrow">→</div>
+      <div class="flow-box">解析业务层级结构</div>
+      <div class="arrow">→</div>
+      <div class="flow-box">输出叶子 Attribute Path</div>
+    </div>
+    <p>
+      目标不是简单展平文件本身，而是识别文件所表达的业务字段。例如 JSON Schema 中的
+      <code class="inline">properties</code>、XSD 中的
+      <code class="inline">complexType</code> 都不会成为输出路径。
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="title">支持的四种输入 <span class="badge">Confirmed</span></h2>
+  <div class="format-grid">
+    <div class="format"><h3>JSON</h3><p>从实际 JSON 数据结构中提取已经出现的叶子字段。</p></div>
+    <div class="format"><h3>XML</h3><p>从实际 XML 元素层级中提取叶子元素，并保留根元素。</p></div>
+    <div class="format"><h3>JSON Schema</h3><p>根据 Schema 描述的业务 properties/items 提取字段。</p></div>
+    <div class="format"><h3>XML Schema / XSD</h3><p>根据 XSD 的业务 element、complexType 和重复关系提取字段。</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="title">通用规则 <span class="badge">所有格式适用</span></h2>
+  <div class="rules">
+    <div class="rule"><div class="rule-no">1</div><div><h3>只输出叶子属性</h3><p>对象、复杂元素和包装节点只参与组成路径，不单独输出。</p></div></div>
+    <div class="rule"><div class="rule-no">2</div><div><h3>路径使用点号连接</h3><p>统一格式为 <code class="inline">parent.child.attribute</code>。</p></div></div>
+    <div class="rule"><div class="rule-no">3</div><div><h3>数组使用 []</h3><p>简单数组为 <code class="inline">emails[]</code>；对象数组为 <code class="inline">items[].id</code>。</p></div></div>
+    <div class="rule"><div class="rule-no">4</div><div><h3>不输出空对象节点</h3><p>例如 JSON 的 <code class="inline">{ "data": {} }</code> 不产生 data 属性。</p></div></div>
+    <div class="rule"><div class="rule-no">5</div><div><h3>当前只关注 Attribute Path</h3><p>第一阶段不要求保存实际值。</p></div></div>
+    <div class="rule"><div class="rule-no">6</div><div><h3>暂不输出类型</h3><p>string、integer、boolean 等类型不属于当前输出。</p></div></div>
+    <div class="rule"><div class="rule-no">7</div><div><h3>暂不输出约束</h3><p>required、enum、长度和数值范围不进入结果。</p></div></div>
+    <div class="rule"><div class="rule-no">8</div><div><h3>null 仍可产生 Attribute</h3><p>即使类型无法判断，只要字段名存在，就可以输出路径。</p></div></div>
+    <div class="rule"><div class="rule-no">9</div><div><h3>忠实保留原始结构</h3><p>当前不做 JSON 与 XML 之间的命名或层级归一化。</p></div></div>
+    <div class="rule"><div class="rule-no">10</div><div><h3>完整路径是唯一标识</h3><p>同名叶子出现在不同父路径下时，属于不同 Attribute。</p></div></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="title">JSON 已确认规则 <span class="badge">实例数据</span></h2>
+
+  <article class="example-card">
+    <div class="example-head"><h3>对象、简单数组与对象数组</h3><span class="status">已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 JSON</div>
+          <pre>{
+  "user": {
+    "name": "Ava",
+    "emails": ["a@x.com", "b@x.com"]
+  },
+  "items": [
+    {"id": 1, "price": 10},
+    {"id": 2, "price": 20}
+  ]
+}</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出 Physical Attributes</div>
+          <pre>user.name
+user.emails[]
+items[].id
+items[].price</pre>
+        </div>
+      </div>
+      <div class="note">JSON 不添加 <code>root</code> 等虚拟根节点。</div>
+    </div>
+  </article>
+
+  <article class="example-card">
+    <div class="example-head"><h3>null 与空对象</h3><span class="status">已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 JSON</div>
+          <pre>{
+  "employeeId": null,
+  "data": {}
+}</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出</div>
+          <pre>employeeId</pre>
+        </div>
+      </div>
+      <div class="note"><code>employeeId</code> 虽然类型未知，但字段名确定；空对象 <code>data</code> 不产生叶子属性。</div>
+    </div>
+  </article>
+</section>
+
+<section class="section">
+  <h2 class="title">XML 已确认规则 <span class="badge">实例数据</span></h2>
+  <article class="example-card">
+    <div class="example-head"><h3>保留根节点与嵌套元素</h3><span class="status">已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 XML</div>
+          <pre>&lt;appConfig&gt;
+  &lt;appName&gt;dqma-cicd&lt;/appName&gt;
+  &lt;environment&gt;local&lt;/environment&gt;
+  &lt;featureToggle&gt;
+    &lt;localRun&gt;true&lt;/localRun&gt;
+  &lt;/featureToggle&gt;
+  &lt;retryCount&gt;3&lt;/retryCount&gt;
+  &lt;owners&gt;
+    &lt;owner&gt;dataops-team&lt;/owner&gt;
+  &lt;/owners&gt;
+&lt;/appConfig&gt;</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出</div>
+          <pre>appConfig.appName
+appConfig.environment
+appConfig.featureToggle.localRun
+appConfig.retryCount
+appConfig.owners.owner</pre>
+        </div>
+      </div>
+      <div class="note">XML 的真实根元素 <code>appConfig</code> 必须保留。当前不把 XML 命名转换为 JSON 的 snake_case。</div>
+    </div>
+  </article>
+
+  <article class="example-card">
+    <div class="example-head"><h3>重复 XML 元素</h3><span class="status">基础规则已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 XML</div>
+          <pre>&lt;owners&gt;
+  &lt;owner&gt;team-a&lt;/owner&gt;
+  &lt;owner&gt;team-b&lt;/owner&gt;
+&lt;/owners&gt;</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出</div>
+          <pre>owners.owner[]</pre>
+        </div>
+      </div>
+      <div class="note">重复出现的元素使用 <code>[]</code>。是否仅出现一次时也标记为数组，仍属于单独待确认问题。</div>
+    </div>
+  </article>
+</section>
+
+<section class="section">
+  <h2 class="title">JSON Schema 已确认规则 <span class="badge">Schema 语义解析</span></h2>
+  <article class="example-card">
+    <div class="example-head"><h3>properties、object 与 array</h3><span class="status">已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 JSON Schema（简化）</div>
+          <pre>{
+  "title": "AppConfig",
+  "type": "object",
+  "properties": {
+    "app_name": {"type": "string"},
+    "environment": {"type": "string"},
+    "feature_toggle": {
+      "type": "object",
+      "properties": {
+        "local_run": {"type": "boolean"}
+      }
+    },
+    "retry_count": {"type": "integer"},
+    "owners": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出</div>
+          <pre>app_name
+environment
+feature_toggle.local_run
+retry_count
+owners[]</pre>
+        </div>
+      </div>
+      <div class="note">
+        不输出 <code>$schema</code>、<code>$id</code>、<code>title</code>、<code>type</code>、
+        <code>properties</code>、<code>items</code>、<code>required</code> 和约束值。
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="section">
+  <h2 class="title">XML Schema / XSD 已确认规则 <span class="badge">Schema 语义解析</span></h2>
+  <article class="example-card">
+    <div class="example-head"><h3>complexType、simpleType、sequence 与 maxOccurs</h3><span class="status">已确认</span></div>
+    <div class="example-body">
+      <div class="example-grid">
+        <div class="panel">
+          <div class="panel-title">输入 XSD（简化）</div>
+          <pre>&lt;xs:element name="appConfig"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="appName" type="xs:string"/&gt;
+      &lt;xs:element name="featureToggle"&gt;
+        &lt;xs:complexType&gt;
+          &lt;xs:sequence&gt;
+            &lt;xs:element name="localRun"
+                        type="xs:boolean"/&gt;
+          &lt;/xs:sequence&gt;
+        &lt;/xs:complexType&gt;
+      &lt;/xs:element&gt;
+      &lt;xs:element name="owners"&gt;
+        &lt;xs:complexType&gt;
+          &lt;xs:sequence&gt;
+            &lt;xs:element name="owner"
+                        type="xs:string"
+                        maxOccurs="unbounded"/&gt;
+          &lt;/xs:sequence&gt;
+        &lt;/xs:complexType&gt;
+      &lt;/xs:element&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title">输出</div>
+          <pre>appConfig.appName
+appConfig.featureToggle.localRun
+appConfig.owners.owner[]</pre>
+        </div>
+      </div>
+      <div class="note">
+        不输出 <code>schema.complexType.sequence</code> 等 XSD 语法路径。
+        <code>maxOccurs &gt; 1</code> 或 <code>unbounded</code> 会影响 <code>[]</code>，因此需要读取，但不作为约束输出。
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="section">
+  <h2 class="title">第一阶段输入与输出边界 <span class="badge">Scope</span></h2>
+  <div class="scope">
+    <div class="scope-box in">
+      <h3>第一阶段包含</h3>
+      <ul>
+        <li>识别四种输入格式的业务结构</li>
+        <li>提取叶子 Attribute Name / Path</li>
+        <li>支持对象、嵌套结构和数组</li>
+        <li>保留 XML / XSD 根元素</li>
+        <li>JSON 不添加虚拟根</li>
+        <li>解析影响路径结构的信息，如 JSON Schema items、XSD maxOccurs</li>
+      </ul>
+    </div>
+    <div class="scope-box out">
+      <h3>第一阶段暂不包含</h3>
+      <ul>
+        <li>实际值输出</li>
+        <li>字段类型输出</li>
+        <li>required、nullable、enum、长度和范围等约束输出</li>
+        <li>JSON/XML 跨格式命名归一化</li>
+        <li>尚未确认的 XML Attribute、复杂 Schema 组合及跨文件引用</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="title">规则速查表 <span class="badge">Acceptance Baseline</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>输入场景</th><th>输入结构</th><th>期望输出</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>JSON 普通字段</td><td><code>{"code":200}</code></td><td><code>code</code></td><td>无虚拟根</td></tr>
+        <tr><td>JSON 嵌套对象</td><td><code>data.employeeId</code></td><td><code>data.employeeId</code></td><td>仅输出叶子</td></tr>
+        <tr><td>JSON 简单数组</td><td><code>emails:["a","b"]</code></td><td><code>emails[]</code></td><td>数组本身是叶子</td></tr>
+        <tr><td>JSON 对象数组</td><td><code>items:[{"id":1}]</code></td><td><code>items[].id</code></td><td>[] 标记数组节点</td></tr>
+        <tr><td>JSON null</td><td><code>{"id":null}</code></td><td><code>id</code></td><td>类型未知不影响字段名</td></tr>
+        <tr><td>JSON 空对象</td><td><code>{"data":{}}</code></td><td>无输出</td><td>没有叶子字段</td></tr>
+        <tr><td>XML 普通元素</td><td><code>&lt;employee&gt;&lt;name/&gt;&lt;/employee&gt;</code></td><td><code>employee.name</code></td><td>保留根元素</td></tr>
+        <tr><td>XML 重复元素</td><td>多个 <code>&lt;owner&gt;</code></td><td><code>owners.owner[]</code></td><td>重复结构加 []</td></tr>
+        <tr><td>JSON Schema array</td><td><code>type=array + items</code></td><td><code>owners[]</code></td><td>不输出 Schema 语法节点</td></tr>
+        <tr><td>XSD maxOccurs</td><td><code>maxOccurs="unbounded"</code></td><td><code>owner[]</code></td><td>用于判断重复结构</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="decision">
+    <h2 class="title">第一阶段一句话定义</h2>
+    <p>
+      <strong>将 JSON、XML、JSON Schema 和 XML Schema 所表达的树形业务结构，
+      转换为以点号连接的叶子 Attribute Path 集合；JSON 不增加虚拟根，
+      XML/XSD 保留真实根元素，数组或重复结构使用 [] 表达，并且当前不输出实际值、字段类型和约束。</strong>
+    </p>
+  </div>
+</section>
+
+<div class="footer">Physical Model · Phase 1 Confirmed Requirement Baseline</div>
+</div>
+
+<button class="print" onclick="window.print()">打印 / 保存 PDF</button>
+</body>
+</html>

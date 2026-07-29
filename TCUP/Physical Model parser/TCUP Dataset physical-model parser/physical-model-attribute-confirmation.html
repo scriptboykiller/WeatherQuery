@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Physical Model 提取规则确认清单</title>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #667085;
+    --line: #e4e7ec;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --green: #15803d;
+    --green-soft: #f0fdf4;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --red: #b42318;
+    --red-soft: #fef3f2;
+    --code: #101828;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+                 "PingFang SC", Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 22px 64px;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    color: white;
+    border-radius: 20px;
+    padding: 34px 38px;
+    box-shadow: 0 18px 45px rgba(37, 99, 235, .2);
+  }
+
+  .hero h1 {
+    margin: 0 0 12px;
+    font-size: 31px;
+    line-height: 1.25;
+  }
+
+  .hero p {
+    margin: 0;
+    max-width: 900px;
+    opacity: .95;
+    font-size: 16px;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .metric {
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .metric strong {
+    display: block;
+    font-size: 24px;
+  }
+
+  .metric span {
+    font-size: 13px;
+    opacity: .9;
+  }
+
+  .section {
+    margin-top: 26px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-size: 23px;
+  }
+
+  .section-title .badge {
+    font-size: 12px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-weight: 700;
+  }
+
+  .intro-card, .question-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 5px 18px rgba(16,24,40,.05);
+  }
+
+  .intro-card {
+    padding: 22px 24px;
+  }
+
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .flow-box {
+    padding: 16px;
+    text-align: center;
+    border-radius: 13px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    font-weight: 700;
+  }
+
+  .arrow {
+    font-size: 22px;
+    color: var(--blue);
+  }
+
+  .questions {
+    display: grid;
+    gap: 18px;
+  }
+
+  .question-card {
+    overflow: hidden;
+  }
+
+  .q-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .number {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: white;
+    background: var(--blue);
+    font-weight: 800;
+  }
+
+  .q-title {
+    flex: 1;
+  }
+
+  .q-title h3 {
+    margin: 0 0 4px;
+    font-size: 19px;
+  }
+
+  .q-title p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .priority {
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .p0 { background: var(--red-soft); color: var(--red); }
+  .p1 { background: var(--amber-soft); color: var(--amber); }
+  .p2 { background: #f2f4f7; color: #475467; }
+
+  .q-body {
+    padding: 20px 22px 22px;
+  }
+
+  .example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-title {
+    padding: 9px 12px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    font-weight: 800;
+    color: #475467;
+  }
+
+  pre {
+    margin: 0;
+    padding: 14px;
+    overflow-x: auto;
+    background: var(--code);
+    color: #e5eefc;
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    min-height: 100%;
+  }
+
+  .choice-box {
+    margin-top: 14px;
+    display: grid;
+    gap: 9px;
+  }
+
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+
+  .choice input {
+    margin-top: 5px;
+    transform: scale(1.1);
+  }
+
+  .choice strong { display: block; }
+  .choice small { color: var(--muted); }
+
+  .recommendation {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--green-soft);
+    color: #166534;
+    border-left: 4px solid #22c55e;
+    border-radius: 9px;
+  }
+
+  .impact {
+    margin-top: 10px;
+    padding: 11px 13px;
+    background: var(--amber-soft);
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+    border-radius: 9px;
+  }
+
+  details {
+    margin-top: 12px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fbfdff;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+  }
+
+  th, td {
+    padding: 13px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    background: #f8fafc;
+    color: #475467;
+    font-size: 13px;
+  }
+
+  tr:last-child td { border-bottom: 0; }
+
+  code.inline {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #eef2ff;
+    color: #3730a3;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .known {
+    background: var(--green-soft);
+    border: 1px solid #bbf7d0;
+    padding: 18px 20px;
+    border-radius: 15px;
+  }
+
+  .known h3 { margin-top: 0; }
+
+  .known-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 22px;
+  }
+
+  .known-item::before {
+    content: "✓";
+    color: var(--green);
+    font-weight: 900;
+    margin-right: 8px;
+  }
+
+  .footer {
+    margin-top: 26px;
+    padding: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .print-button {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    background: #111827;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0,0,0,.2);
+  }
+
+  @media (max-width: 800px) {
+    .summary, .example-grid, .known-grid { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr; }
+    .arrow { transform: rotate(90deg); text-align: center; }
+    .q-head { flex-wrap: wrap; }
+    .priority { margin-left: 48px; }
+  }
+
+  @media print {
+    body { background: white; }
+    .page { max-width: none; padding: 0; }
+    .hero { box-shadow: none; }
+    .question-card, .intro-card { break-inside: avoid; box-shadow: none; }
+    .print-button { display: none; }
+    details { display: block; }
+    details > * { display: block; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+  <header class="hero">
+    <h1>Physical Model 提取规则确认清单</h1>
+    <p>
+      用于确认：如何将 JSON、XML、JSON Schema、XML Schema（XSD）的树形业务结构，
+      转换为以点号连接的叶子属性路径。本文只讨论 Attribute Name / Attribute Path，
+      暂不讨论实际值、类型和约束输出。
+    </p>
+    <div class="summary">
+      <div class="metric"><strong>4</strong><span>输入格式</span></div>
+      <div class="metric"><strong>10</strong><span>待确认规则</span></div>
+      <div class="metric"><strong>6</strong><span>已确认基础规则</span></div>
+      <div class="metric"><strong>MVP</strong><span>一期边界优先</span></div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="intro-card">
+      <h2 class="section-title">目标模型 <span class="badge">统一输出思想</span></h2>
+      <div class="flow">
+        <div class="flow-box">JSON / XML / Schema</div>
+        <div class="arrow">→</div>
+        <div class="flow-box">识别业务树形结构</div>
+        <div class="arrow">→</div>
+        <div class="flow-box">叶子 Physical Model</div>
+      </div>
+      <p>
+        示例：<code class="inline">items[].price</code>。路径本身是 Physical Model的唯一标识；
+        相同叶子名称出现在不同父节点下时，仍然是不同属性。
+      </p>
+    </div>
+  </section>
+
+  <section class="section known">
+    <h3>目前已经确认的规则</h3>
+    <div class="known-grid">
+      <div class="known-item">只输出叶子属性，不输出中间对象节点</div>
+      <div class="known-item">路径分隔符固定使用 <code class="inline">.</code></div>
+      <div class="known-item">数组使用 <code class="inline">[]</code></div>
+      <div class="known-item">JSON 不增加虚拟根节点</div>
+      <div class="known-item">XML / XSD 保留真实根元素</div>
+      <div class="known-item">当前不做 JSON 与 XML 的命名或结构归一化</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">需要确认的问题 <span class="badge">带例子和建议</span></h2>
+    <div class="questions">
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">1</div>
+          <div class="q-title">
+            <h3>XML Attribute 如何表示？</h3>
+            <p>需要区分 XML 标签属性和 XML 子元素，避免路径冲突。</p>
+          </div>
+          <span class="priority p0">P0 必须确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">输入 XML</div>
+              <pre>&lt;employee id="1001"&gt;
+  &lt;id&gt;internal-id&lt;/id&gt;
+  &lt;name&gt;Dexter&lt;/name&gt;
+&lt;/employee&gt;</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">建议输出</div>
+              <pre>employee.@id
+employee.id
+employee.name</pre>
+            </div>
+          </div>
+          <div class="impact">如果不使用 <b>@</b>，标签属性 <code>id="1001"</code> 与子元素 <code>&lt;id&gt;</code> 都会变成 <code>employee.id</code>，产生冲突。</div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>方案 A：使用 @（推荐）</strong><small>输出 employee.@id，可明确区分 XML Attribute。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>方案 B：忽略 XML Attribute</strong><small>一期只处理 XML Element，可能丢失业务字段。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>采用 <code>employee.@id</code>。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">2</div>
+          <div class="q-title">
+            <h3>JSON 顶层是数组时，路径如何表示？</h3>
+            <p>JSON 根节点不一定是 Object，也可能直接是 Array。</p>
+          </div>
+          <span class="priority p0">P0 必须确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">输入 JSON</div>
+              <pre>[
+  {"id": 1, "name": "A"},
+  {"id": 2, "name": "B"}
+]</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">候选输出</div>
+              <pre>方案 A:
+[].id
+[].name
+
+方案 B:
+$[].id
+$[].name</pre>
+            </div>
+          </div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>方案 A：[].id</strong><small>不引入虚拟根，和“JSON 不加根”原则一致。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>方案 B：$[].id</strong><small>使用 $ 显式表示 JSON 根。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>使用 <code>[].id</code>，规则最简单。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">3</div>
+          <div class="q-title">
+            <h3>空数组是否输出 Attribute？</h3>
+            <p>实例数据中的空数组无法说明数组元素是简单值还是对象。</p>
+          </div>
+          <span class="priority p0">P0 必须确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">JSON 实例</div>
+              <pre>{
+  "owners": []
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">JSON Schema</div>
+              <pre>{
+  "properties": {
+    "owners": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}</pre>
+            </div>
+          </div>
+          <div class="impact">实例 JSON 只能确认 owners 是数组，但不能知道元素结构；Schema 可以确定它是字符串数组。</div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>方案 A：实例也输出 owners[]（推荐）</strong><small>至少 Attribute Name 和数组性质是确定的。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>方案 B：实例空数组不输出</strong><small>只有 Schema 中明确 items 时才输出。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>实例输出 <code>owners[]</code>；如果将来需要子字段，则承认当前实例无法推断。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">4</div>
+          <div class="q-title">
+            <h3>XML 单个重复元素，是否能判断为数组？</h3>
+            <p>XML 实例只出现一次时，无法证明该元素可以重复。</p>
+          </div>
+          <span class="priority p0">P0 必须确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">XML 实例</div>
+              <pre>&lt;owners&gt;
+  &lt;owner&gt;team-a&lt;/owner&gt;
+&lt;/owners&gt;</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">XSD 定义</div>
+              <pre>&lt;xs:element name="owner"
+  type="xs:string"
+  maxOccurs="unbounded"/&gt;</pre>
+            </div>
+          </div>
+          <div class="impact">只看实例可能得到 <code>owners.owner</code>；看 XSD 则明确得到 <code>owners.owner[]</code>。</div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>方案 A：实例按实际重复次数判断（推荐）</strong><small>出现多次才标记 []；Schema 按 maxOccurs 判断。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>方案 B：XML 实例和 XSD 联合解析</strong><small>需要同时提供实例和对应 Schema，超出当前独立输入范围。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>四种输入独立解析；允许 XML 实例与 XSD 对同一字段产生不同数组标记。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">5</div>
+          <div class="q-title">
+            <h3>输出是否保持输入顺序？</h3>
+            <p>顺序不影响路径唯一性，但会影响人工对照和测试结果稳定性。</p>
+          </div>
+          <span class="priority p0">P0 建议确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">输入</div>
+              <pre>{
+  "b": 1,
+  "a": 2,
+  "data": {"z": 3, "x": 4}
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">推荐输出</div>
+              <pre>b
+a
+data.z
+data.x</pre>
+            </div>
+          </div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>保持输入顺序（推荐）</strong><small>便于和原文件逐行核对，输出更稳定。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>按路径排序</strong><small>结果整齐，但改变原始结构顺序。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>默认保持输入顺序。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">6</div>
+          <div class="q-title">
+            <h3>重复路径是否去重？</h3>
+            <p>数组中多条记录会反复出现相同叶子属性。</p>
+          </div>
+          <span class="priority p0">P0 建议确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">输入 JSON</div>
+              <pre>{
+  "items": [
+    {"id": 1},
+    {"id": 2},
+    {"id": 3}
+  ]
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">推荐输出</div>
+              <pre>items[].id</pre>
+            </div>
+          </div>
+          <div class="recommendation"><b>建议：</b>按完整 Attribute Path 去重，同时保留第一次出现的位置顺序。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">7</div>
+          <div class="q-title">
+            <h3>XML Namespace 是否进入路径？</h3>
+            <p>XML 可能带前缀，同一个 local name 也可能属于不同命名空间。</p>
+          </div>
+          <span class="priority p1">P1 设计预留</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">输入 XML</div>
+              <pre>&lt;hr:employee xmlns:hr="urn:hr"&gt;
+  &lt;hr:name&gt;Dexter&lt;/hr:name&gt;
+&lt;/hr:employee&gt;</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">候选输出</div>
+              <pre>方案 A:
+employee.name
+
+方案 B:
+hr:employee.hr:name</pre>
+            </div>
+          </div>
+          <div class="recommendation"><b>一期建议：</b>只取 local name，输出 <code>employee.name</code>；但设计上保留 namespace 信息，避免以后无法扩展。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">8</div>
+          <div class="q-title">
+            <h3>JSON Schema 的 oneOf / anyOf / allOf 怎么处理？</h3>
+            <p>复杂组合 Schema 可能定义多套互斥或合并结构。</p>
+          </div>
+          <span class="priority p1">P1 可暂缓</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">示例</div>
+              <pre>{
+  "oneOf": [
+    {"properties": {"email": {"type":"string"}}},
+    {"properties": {"phone": {"type":"string"}}}
+  ]
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">可能结果</div>
+              <pre>email
+phone
+
+但两者不会同时出现</pre>
+            </div>
+          </div>
+          <div class="impact">如果简单合并，会失去“二选一”的语义；如果不合并，又可能漏掉 Attribute。</div>
+          <div class="recommendation"><b>一期建议：</b>明确标记为暂不支持，或只提取所有可能叶子路径但不表达组合关系。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">9</div>
+          <div class="q-title">
+            <h3>动态属性名如何处理？</h3>
+            <p>JSON Schema 可以允许任意 Key，因此无法生成固定 Attribute Name。</p>
+          </div>
+          <span class="priority p1">P1 可暂缓</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">示例 Schema</div>
+              <pre>{
+  "type": "object",
+  "additionalProperties": {
+    "type": "string"
+  }
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">可能实例</div>
+              <pre>{
+  "teamA": "enabled",
+  "teamB": "disabled"
+}</pre>
+            </div>
+          </div>
+          <div class="recommendation"><b>一期建议：</b>动态 Key 不生成固定 Physical Attribute；记录为 unsupported 或忽略。</div>
+        </div>
+      </article>
+
+      <article class="question-card">
+        <div class="q-head">
+          <div class="number">10</div>
+          <div class="q-title">
+            <h3>Schema 引用支持到什么范围？</h3>
+            <p>不解析引用可能丢失叶子属性，但完整支持跨文件引用会明显扩大范围。</p>
+          </div>
+          <span class="priority p1">P1 范围确认</span>
+        </div>
+        <div class="q-body">
+          <div class="example-grid">
+            <div class="panel">
+              <div class="panel-title">JSON Schema 内部引用</div>
+              <pre>{
+  "properties": {
+    "employee": {
+      "$ref": "#/$defs/Employee"
+    }
+  }
+}</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-title">XSD 外部引用</div>
+              <pre>&lt;xs:include
+  schemaLocation="common-types.xsd"/&gt;</pre>
+            </div>
+          </div>
+          <div class="choice-box">
+            <label class="choice"><input type="checkbox"><span><strong>一期只支持内联定义（最小范围）</strong></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>支持同文件内部引用</strong><small>JSON $ref、XSD named type/ref。</small></span></label>
+            <label class="choice"><input type="checkbox"><span><strong>暂不支持跨文件引用</strong><small>外部 URL、include/import 后续处理。</small></span></label>
+          </div>
+          <div class="recommendation"><b>建议：</b>一期至少明确范围，不要默认承诺全部支持。</div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">建议的一期范围表 <span class="badge">MVP</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>一期建议</th>
+            <th>示例结果</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>JSON Object</td><td>支持</td><td><code>data.name</code></td><td>已确认</td></tr>
+          <tr><td>JSON 简单数组</td><td>支持</td><td><code>emails[]</code></td><td>已确认</td></tr>
+          <tr><td>JSON 对象数组</td><td>支持</td><td><code>items[].id</code></td><td>已确认</td></tr>
+          <tr><td>XML Element</td><td>支持并保留根</td><td><code>appConfig.appName</code></td><td>已确认</td></tr>
+          <tr><td>XML Attribute</td><td>建议使用 @</td><td><code>employee.@id</code></td><td>待确认</td></tr>
+          <tr><td>JSON Schema 常规 properties/items</td><td>支持</td><td><code>feature_toggle.local_run</code></td><td>已确认</td></tr>
+          <tr><td>XSD sequence/simpleType/complexType</td><td>支持</td><td><code>appConfig.featureToggle.localRun</code></td><td>已确认</td></tr>
+          <tr><td>XSD maxOccurs</td><td>用于识别 []</td><td><code>owner[]</code></td><td>已确认</td></tr>
+          <tr><td>oneOf / anyOf / allOf / xs:choice</td><td>一期暂缓</td><td>—</td><td>需声明边界</td></tr>
+          <tr><td>跨文件 $ref / include / import</td><td>一期暂缓</td><td>—</td><td>需声明边界</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- <section class="section">
+    <div class="intro-card">
+      <h2 class="section-title">可以直接对老板说的话</h2>
+      <p>
+        “我已经把四种输入中影响 Physical Model Attribute 提取的边界情况整理出来了。
+        当前基础规则已明确，主要还需要确认 XML Attribute、顶层数组、空数组、
+        XML 实例中的数组判断、输出顺序、去重和 Schema 引用范围。
+        对于 oneOf、xs:choice、动态属性和跨文件引用，我建议作为一期范围外事项明确记录，
+        避免后续理解不一致。”
+      </p>
+    </div>
+  </section> -->
+
+  <div class="footer">
+    Physical Model Attribute Requirement Review · 可直接浏览、打印或另存为 PDF
+  </div>
+</div>
+
+<button class="print-button" onclick="window.print()">打印 / 保存 PDF</button>
+</body>
+</html>
