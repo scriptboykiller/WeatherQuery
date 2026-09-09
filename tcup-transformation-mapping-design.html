@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TCUP Transformation Mapping design for array + object + oneOf schemas">
+  <title>TCUP Transformation Mapping | Array + Object + OneOf Design</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #647089;
+      --line: #dbe3ee;
+      --paper: #ffffff;
+      --canvas: #f3f6fa;
+      --navy: #12284c;
+      --blue: #246bfd;
+      --blue-soft: #edf4ff;
+      --cyan: #05a9c7;
+      --green: #159a72;
+      --green-soft: #eaf8f3;
+      --amber: #bd6b0a;
+      --amber-soft: #fff5e4;
+      --red: #c1444f;
+      --red-soft: #fff0f1;
+      --shadow: 0 18px 50px rgba(26, 46, 82, .09);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 86% 4%, rgba(36,107,253,.10), transparent 24rem),
+        var(--canvas);
+      font-family: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    button, a { font: inherit; }
+    a { color: inherit; }
+    code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+
+    .page { max-width: 1220px; margin: 0 auto; padding: 0 28px 72px; }
+    .topbar {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(23,32,51,.09);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 760; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+      color: white; background: linear-gradient(145deg, var(--blue), var(--cyan));
+      box-shadow: 0 8px 22px rgba(36,107,253,.22);
+    }
+    .status { color: var(--muted); font-size: .86rem; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+    .hero { padding: 70px 0 40px; text-align: left; }
+    .eyebrow { color: var(--blue); text-transform: uppercase; letter-spacing: .14em; font-weight: 760; font-size: .78rem; }
+    h1 { margin: 15px 0 0; max-width: none; font-size: clamp(2rem, 3.4vw, 3.15rem); line-height: 1.18; letter-spacing: -.045em; color: var(--navy); }
+    .decision {
+      margin-top: 38px; display: grid; grid-template-columns: 128px 1fr; gap: 22px; align-items: center;
+      padding: 24px 28px; background: var(--navy); color: white; border-radius: var(--radius);
+      box-shadow: 0 22px 55px rgba(18,40,76,.20); text-align: left;
+    }
+    .decision-label { color: #80b4ff; font-size: .76rem; font-weight: 780; letter-spacing: .12em; text-transform: uppercase; }
+    .decision strong { display: block; font-size: clamp(.95rem, 1.45vw, 1.08rem); line-height: 1.58; font-weight: 650; }
+    .decision em { color: #88e1d0; font-style: normal; }
+
+    .section { margin-top: 74px; }
+    .section-head { display: grid; grid-template-columns: 1fr 2fr; gap: 38px; margin-bottom: 28px; align-items: end; }
+    .kicker { margin: 0 0 5px; color: var(--blue); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 0; font-size: clamp(1.65rem, 3vw, 2.5rem); line-height: 1.15; letter-spacing: -.035em; color: var(--navy); }
+    .section-head p { margin: 0; color: var(--muted); max-width: 700px; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+    .card h3 { margin: 0 0 8px; font-size: 1.14rem; color: var(--navy); }
+    .card p { margin: 0; color: var(--muted); }
+    .problem { position: relative; overflow: hidden; }
+    .problem::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--red); }
+    .problem .tag { background: var(--red-soft); color: var(--red); }
+    .solution::before { background: var(--green); }
+    .solution .tag { background: var(--green-soft); color: var(--green); }
+    .tag { display: inline-flex; border-radius: 999px; padding: 5px 10px; margin-bottom: 18px; font-size: .78rem; font-weight: 760; }
+
+    .model-list { display: grid; gap: 10px; margin-top: 22px; }
+    .model-row { display: grid; grid-template-columns: 70px 1fr; gap: 12px; align-items: start; }
+    .model-row span { font-size: .8rem; color: var(--muted); padding-top: 8px; }
+    .code-line { background: #f6f8fb; border: 1px solid #e6ebf2; border-radius: 10px; padding: 8px 11px; font-size: .83rem; overflow-wrap: anywhere; }
+
+    .contract { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .code-card { padding: 0; overflow: hidden; background: #111c31; color: #dbe8ff; border-color: #263856; }
+    .code-title { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #182744; color: #9fb3d3; font-size: .78rem; }
+    .lights { display: flex; gap: 6px; }
+    .lights i { width: 8px; height: 8px; border-radius: 50%; background: #3c557a; }
+    pre { margin: 0; padding: 24px; overflow-x: auto; font-size: .84rem; line-height: 1.75; }
+    .key { color: #76b7ff; } .str { color: #83dfbd; } .pun { color: #8d9cb6; }
+
+    .rules { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .rule { display: grid; grid-template-columns: 42px 1fr; gap: 14px; padding: 18px; border-radius: 15px; background: white; border: 1px solid var(--line); }
+    .rule-no { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--blue); background: var(--blue-soft); font-weight: 800; }
+    .rule h3 { margin: 0 0 4px; font-size: 1rem; }
+    .rule p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .flow {
+      display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch;
+      padding: 30px; background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .step { min-height: 175px; padding: 20px; border-radius: 15px; background: #f7f9fc; border: 1px solid #e5eaf1; }
+    .step b { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--navy); color: white; font-size: .78rem; }
+    .step h3 { margin: 20px 0 6px; font-size: 1rem; }
+    .step p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .arrow { display: grid; place-items: center; color: var(--blue); font-size: 1.3rem; }
+    .step.final { background: var(--green-soft); border-color: #bfe9d9; }
+    .step.final b { background: var(--green); }
+
+    .transform { background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .transform-head { display: grid; grid-template-columns: 1fr 78px 1fr; padding: 14px 24px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .transform-row { display: grid; grid-template-columns: 1fr 78px 1fr; align-items: center; min-height: 118px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
+    .transform-row:last-child { border-bottom: 0; }
+    .old, .new { min-width: 0; }
+    .transform small { color: var(--muted); display: block; margin-bottom: 7px; }
+    .transform code { display: block; overflow-wrap: anywhere; font-size: .86rem; }
+    .old code { color: #738097; }
+    .new code { color: var(--navy); font-weight: 700; }
+    .new mark { color: var(--blue); background: var(--blue-soft); border-radius: 5px; padding: 2px 4px; }
+    .arrow-chip { justify-self: center; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue); }
+
+    .identifier-card { padding: 0; overflow: hidden; }
+    .identifier-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+    .identifier-head h3 { margin: 0; }
+    .pill { white-space: nowrap; font-size: .72rem; font-weight: 780; padding: 5px 9px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); }
+    .identifier-body { padding: 22px 24px; }
+    .identifier-body code { display: block; padding: 12px; background: #f6f8fb; border-radius: 10px; overflow-wrap: anywhere; font-size: .8rem; }
+    .identifier-body code + code { margin-top: 9px; }
+    .equals { padding: 7px 0; color: var(--muted); text-align: center; font-size: .78rem; }
+
+    .benefit { min-height: 190px; }
+    .icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; margin-bottom: 25px; background: var(--blue-soft); color: var(--blue); font-weight: 850; }
+
+    .boundary { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; }
+    .guardrails { background: var(--amber-soft); border-color: #f2d6aa; box-shadow: none; }
+    .guardrails ul { margin: 18px 0 0; padding-left: 22px; color: #694924; }
+    .guardrails li + li { margin-top: 9px; }
+    .scope { background: var(--navy); color: white; border: 0; }
+    .scope h3 { color: white; }
+    .scope p { color: #afbdd4; }
+    .checklist { display: grid; gap: 12px; margin-top: 20px; }
+    .check { display: flex; gap: 10px; align-items: start; color: #e9f2ff; }
+    .check i { color: #76dfbd; font-style: normal; font-weight: 900; }
+
+    .footer { margin-top: 72px; padding: 34px 0 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 25px; color: var(--muted); font-size: .86rem; }
+    .footer strong { color: var(--navy); }
+
+    @media (max-width: 900px) {
+      .section-head, .contract, .boundary { grid-template-columns: 1fr; }
+      .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-3 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; gap: 10px; }
+      .arrow { transform: rotate(90deg); height: 26px; }
+    }
+    @media (max-width: 680px) {
+      .page { padding: 0 16px 48px; }
+      .topbar { height: 64px; }
+      .status { display: none; }
+      .hero { padding-top: 48px; }
+      .decision { grid-template-columns: 1fr; gap: 7px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .rules { grid-template-columns: 1fr; }
+      .transform-head { display: none; }
+      .transform-row { grid-template-columns: 1fr; gap: 12px; }
+      .arrow-chip { transform: rotate(90deg); }
+      .footer { flex-direction: column; }
+    }
+    @media print {
+      body { background: white; }
+      .page { max-width: none; padding: 0 14mm; }
+      .hero { padding-top: 32px; }
+      .section { margin-top: 46px; break-inside: avoid; }
+      .card, .flow, .transform { box-shadow: none; }
+      .topbar { height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">T</span><span>TCUP · Transformation Mapping</span></div>
+      <div class="status"><span class="dot"></span>MVP Design Proposal</div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Design proposal · Array + Object + OneOf</div>
+      <h1>A focused design for turning repeated <strong>fieldValue</strong> entries into identifiable Physical Fields—without changing the database model.</h1>
+      <div class="decision">
+        <div class="decision-label">Core decision</div>
+        <strong>Support the Data Owner's <em>oneOf</em>-based Schema without changing the database or adding a Logical Field model. Use <em>x-tcup-mapping</em> to make the identifier and value explicit, then enhance the existing path and name.</strong>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">01 · Why</p><h2>The structure is visible.<br>The meaning is not.</h2></div>
+        <p>Standard parsing sees repeated array elements with the same <code>fieldValue</code>. The actual business meaning is carried by <code>fieldName.const</code> inside each oneOf branch.</p>
+      </div>
+      <div class="grid-2">
+        <article class="card problem">
+          <span class="tag">Current state · Indistinguishable</span>
+          <h3>Multiple Physical Fields look exactly the same</h3>
+          <div class="model-list">
+            <div class="model-row"><span>Name</span><div class="code-line">fieldValue</div></div>
+            <div class="model-row"><span>Path</span><div class="code-line">stateFormData[].fieldValue</div></div>
+          </div>
+        </article>
+        <article class="card problem solution">
+          <span class="tag">Target state · Clear meaning</span>
+          <h3>The same physical structure now maps to a specific business field</h3>
+          <div class="model-list">
+            <div class="model-row"><span>Name</span><div class="code-line">fieldValue(PREV_ACTOR_LATE_RESPONSE_CODE)</div></div>
+            <div class="model-row"><span>Path</span><div class="code-line">stateFormData[@fieldName='PREV_ACTOR_LATE_RESPONSE_CODE'].fieldValue</div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">02 · Contract</p><h2>The Data Owner declares meaning.<br>TCUP does not guess.</h2></div>
+        <p>A small Schema extension tells TCUP which properties identify an array element and which property contains the value to map.</p>
+      </div>
+      <div class="contract">
+        <article class="card code-card">
+          <div class="code-title"><span>Example A · Single Identifier</span><span class="lights"><i></i><i></i><i></i></span></div>
+          <pre><span class="pun">{</span>
+  <span class="key">"oneOf"</span><span class="pun">:</span> <span class="pun">[</span>
+    <span class="pun">{</span> <span class="key">"properties"</span><span class="pun">:</span> <span class="pun">{</span>
+      <span class="key">"fieldName"</span><span class="pun">:</span> <span class="pun">{</span>
+        <span class="key">"const"</span><span class="pun">:</span> <span class="str">"PREV_ACTOR_LATE_RESPONSE_CODE"</span>
+      <span class="pun">},</span>
+      <span class="key">"fieldValue"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"type"</span><span class="pun">:</span> <span class="str">"string"</span> <span class="pun">}</span>
+    <span class="pun">} },</span>
+    <span class="pun">{</span> <span class="key">"properties"</span><span class="pun">:</span> <span class="pun">{</span>
+      <span class="key">"fieldName"</span><span class="pun">:</span> <span class="pun">{</span>
+        <span class="key">"const"</span><span class="pun">:</span> <span class="str">"PREV_ACTOR_ESCALATION"</span>
+      <span class="pun">},</span>
+      <span class="key">"fieldValue"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"type"</span><span class="pun">:</span> <span class="str">"string"</span> <span class="pun">}</span>
+    <span class="pun">} }</span>
+  <span class="pun">],</span>
+  <span class="key">"x-tcup-mapping"</span><span class="pun">:</span> <span class="pun">{</span>
+    <span class="key">"identifier"</span><span class="pun">:</span> <span class="pun">[</span><span class="str">"fieldName"</span><span class="pun">],</span>
+    <span class="key">"valueProperty"</span><span class="pun">:</span> <span class="str">"fieldValue"</span>
+  <span class="pun">}</span>
+<span class="pun">}</span></pre>
+        </article>
+        <article class="card code-card">
+          <div class="code-title"><span>Example B · Composite Identifier</span><span class="lights"><i></i><i></i><i></i></span></div>
+          <pre><span class="pun">{</span>
+  <span class="key">"oneOf"</span><span class="pun">:</span> <span class="pun">[</span>
+    <span class="pun">{</span> <span class="key">"properties"</span><span class="pun">:</span> <span class="pun">{</span>
+      <span class="key">"fieldName"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"const"</span><span class="pun">:</span> <span class="str">"COMMENT"</span> <span class="pun">},</span>
+      <span class="key">"fieldType"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"const"</span><span class="pun">:</span> <span class="str">"SUPERVISORY"</span> <span class="pun">},</span>
+      <span class="key">"fieldValue"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"type"</span><span class="pun">:</span> <span class="str">"string"</span> <span class="pun">}</span>
+    <span class="pun">} },</span>
+    <span class="pun">{</span> <span class="key">"properties"</span><span class="pun">:</span> <span class="pun">{</span>
+      <span class="key">"fieldName"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"const"</span><span class="pun">:</span> <span class="str">"COMMENT"</span> <span class="pun">},</span>
+      <span class="key">"fieldType"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"const"</span><span class="pun">:</span> <span class="str">"REVIEWER"</span> <span class="pun">},</span>
+      <span class="key">"fieldValue"</span><span class="pun">:</span> <span class="pun">{</span> <span class="key">"type"</span><span class="pun">:</span> <span class="str">"string"</span> <span class="pun">}</span>
+    <span class="pun">} }</span>
+  <span class="pun">],</span>
+  <span class="key">"x-tcup-mapping"</span><span class="pun">:</span> <span class="pun">{</span>
+    <span class="key">"identifier"</span><span class="pun">:</span> <span class="pun">[</span><span class="str">"fieldName"</span><span class="pun">,</span> <span class="str">"fieldType"</span><span class="pun">],</span>
+    <span class="key">"valueProperty"</span><span class="pun">:</span> <span class="str">"fieldValue"</span>
+    <span class="pun">}</span>
+<span class="pun">}</span></pre>
+        </article>
+        <div class="rules">
+          <article class="rule"><div class="rule-no">A</div><div><h3><code>oneOf</code> defines candidate business fields</h3><p>Each branch represents one identifiable type of array element.</p></div></article>
+          <article class="rule"><div class="rule-no">B</div><div><h3><code>const</code> provides the exact identifier value</h3><p>TCUP reads explicit values only; it never infers them from names or descriptions.</p></div></article>
+          <article class="rule"><div class="rule-no">C</div><div><h3><code>identifier</code> specifies the identifying properties</h3><p>One property or multiple properties can be used together.</p></div></article>
+          <article class="rule"><div class="rule-no">D</div><div><h3><code>valueProperty</code> specifies the mapping target</h3><p>It identifies the value node that TCUP should expose.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">03 · MVP Flow</p><h2>Four generation steps.<br>No new data model.</h2></div>
+        <p>Identifier metadata exists only during parsing. The final result is stored in the existing Physical Model name and field path fields.</p>
+      </div>
+      <div class="flow">
+        <article class="step"><b>1</b><h3>Detect the contract</h3><p>Find oneOf and x-tcup-mapping under the array items.</p></article>
+        <div class="arrow">→</div>
+        <article class="step"><b>2</b><h3>Read mapping rules</h3><p>Obtain the identifier list and valueProperty.</p></article>
+        <div class="arrow">→</div>
+        <article class="step"><b>3</b><h3>Resolve const values</h3><p>Read each identifier's exact value from every oneOf branch.</p></article>
+        <div class="arrow">→</div>
+        <article class="step final"><b>4</b><h3>Generate Physical Fields</h3><p>Build the enhanced name and path and store them in existing fields.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">04 · Three Changes</p><h2>Three focused changes<br>make the mapping explicit</h2></div>
+        <p><code>x-tcup-mapping</code> solves the key ambiguity by providing an explicit semantic contract. Path then preserves the real array structure with a filter condition, while Name surfaces the business identifier for quick recognition.</p>
+      </div>
+      <div class="transform">
+        <div class="transform-head"><span>Before · Implicit</span><span></span><span>After · Explicit</span></div>
+        <div class="transform-row">
+          <div class="old"><small>Schema Mapping Contract</small><code>Not available — TCUP has to interpret a generic array</code></div>
+          <div class="arrow-chip">→</div>
+          <div class="new"><small>1 · Add explicit semantic guidance</small><code><mark>x-tcup-mapping</mark>: { identifier: ["fieldName"], valueProperty: "fieldValue" }</code></div>
+        </div>
+        <div class="transform-row">
+          <div class="old"><small>Physical Field Path</small><code>stateFormData[].fieldValue</code></div>
+          <div class="arrow-chip">→</div>
+          <div class="new"><small>2 · Add the identifier condition</small><code>stateFormData<mark>[@fieldName='PREV_ACTOR_LATE_RESPONSE_CODE']</mark>.fieldValue</code></div>
+        </div>
+        <div class="transform-row">
+          <div class="old"><small>Physical Field Name</small><code>fieldValue</code></div>
+          <div class="arrow-chip">→</div>
+          <div class="new"><small>3 · Add the identifier value</small><code>fieldValue<mark>(PREV_ACTOR_LATE_RESPONSE_CODE)</mark></code></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">05 · Identifiers</p><h2>One consistent rule<br>for single or composite identifiers</h2></div>
+        <p>The syntax stays minimal and predictable: one identifier creates one condition; multiple identifiers are joined with <code>&amp;&amp;</code>, and names follow the declaration order in the Schema.</p>
+      </div>
+      <div class="grid-2">
+        <article class="card identifier-card">
+          <div class="identifier-head"><h3>Single Identifier</h3><span class="pill">Common case</span></div>
+          <div class="identifier-body">
+            <code>identifier: ["fieldName"]</code>
+            <div class="equals">↓</div>
+            <code>stateFormData[@fieldName='PREV_ACTOR_ESCALATION'].fieldValue</code>
+            <code>fieldValue(PREV_ACTOR_ESCALATION)</code>
+          </div>
+        </article>
+        <article class="card identifier-card">
+          <div class="identifier-head"><h3>Composite Identifier</h3><span class="pill">Extensible</span></div>
+          <div class="identifier-body">
+            <code>identifier: ["fieldName", "fieldType"]</code>
+            <div class="equals">↓</div>
+            <code>stateFormData[@fieldName='comment' &amp;&amp; @fieldType='SUPERVISORY'].fieldValue</code>
+            <code>fieldValue(comment | SUPERVISORY)</code>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">06 · Value</p><h2>Why this is the right<br>MVP approach</h2></div>
+        <p>The change stays within parsing and naming logic. It does not expand the data model or affect existing behavior for standard Schemas.</p>
+      </div>
+      <div class="grid-3">
+        <article class="card benefit"><div class="icon">01</div><h3>Small implementation footprint</h3><p>Reuse the existing Physical Model name and field path strings with zero database migration.</p></article>
+        <article class="card benefit"><div class="icon">02</div><h3>Precise representation</h3><p>The Path expresses both the real physical array and its filter condition without pretending it is a regular object.</p></article>
+        <article class="card benefit"><div class="icon">03</div><h3>Clear user experience</h3><p>Mapping users can recognize business meaning directly from the Name instead of seeing repeated fieldValue entries.</p></article>
+        <article class="card benefit"><div class="icon">04</div><h3>Data Owner controlled</h3><p>The Data Owner Schema explicitly declares mapping semantics; TCUP avoids unreliable field guessing.</p></article>
+        <article class="card benefit"><div class="icon">05</div><h3>Backward compatible</h3><p>Objects, arrays, and fields without x-tcup-mapping continue through the existing parsing logic.</p></article>
+        <article class="card benefit"><div class="icon">06</div><h3>Naturally extensible</h3><p>The same contract supports single and composite identifiers without another model change.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><p class="kicker">07 · Boundaries</p><h2>Clear boundaries.<br>No “smart guessing.”</h2></div>
+        <p>The MVP prioritizes predictable behavior. Enhanced logic is enabled only when the Schema satisfies the explicit contract; otherwise TCUP safely falls back to existing behavior.</p>
+      </div>
+      <div class="boundary">
+        <article class="card guardrails">
+          <h3>Rules and Guardrails</h3>
+          <ul>
+            <li>Enable the enhancement only for target arrays containing <code>x-tcup-mapping</code>.</li>
+            <li>Every identifier must have a <code>const</code> in its corresponding oneOf branch.</li>
+            <li><code>valueProperty</code> must reference a property that exists in the branch.</li>
+            <li>Use the fixed condition syntax <code>@property='value'</code>; join composite conditions with <code>&amp;&amp;</code>.</li>
+            <li>If the contract is missing or invalid—or the Schema is standard—use existing parsing logic and do not guess.</li>
+          </ul>
+        </article>
+        <article class="card scope">
+          <h3>MVP Delivery Scope</h3>
+          <p>Complete the flow from Schema contract to distinguishable Physical Fields with minimal implementation change.</p>
+          <div class="checklist">
+            <div class="check"><i>✓</i><span>Parse x-tcup-mapping</span></div>
+            <div class="check"><i>✓</i><span>Read const values from oneOf branches</span></div>
+            <div class="check"><i>✓</i><span>Generate single or composite identifier conditions</span></div>
+            <div class="check"><i>✓</i><span>Enhance field path and name</span></div>
+            <div class="check"><i>✓</i><span>Preserve backward compatibility for standard Schemas</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>TCUP Transformation Mapping · Design Proposal</div>
+    </footer>
+  </main>
+</body>
+</html>
