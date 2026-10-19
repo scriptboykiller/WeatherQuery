@@ -1,4 +1,4 @@
-好的，这里是在 VS Code 中配置 minininja/db-mcp-server 连接你远程 H2 数据库的完整步骤。
+8好的，这里是在 VS Code 中配置 minininja/db-mcp-server 连接你远程 H2 数据库的完整步骤。
 
 📋 第一步：环境准备
 
@@ -114,3 +114,37 @@
  
 甲：行，那我先出报告，你先做数据统计。
 （后续网络波动，对话中断）
+
+
+
+
+
+
+
+High-Priority Action Items
+ 
+(Based on meeting recording as the primary reference, aligned with Freda's summary points)
+ 
+1. Multi-System Data Model & PT/PS Flag Migration
+- Investigate the migration approach for a single data model associated with multiple dependent systems, covering pass-through (PT) and proceeding (PS) flags.
+- Evaluate the impact on upstream and downstream transformation lineages (e.g. Rosetta, ICA Control, Razor) and ensure the solution causes no disruption to existing business logic.
+2. Version Fields Clarification & Mapping
+- Verify the definition, internal correlation and business meaning of Release Version ID, Version, Model Version, Application Release Version and Data Release Version.
+- Define the mapping rule between these legacy version fields and the version field in the new system.
+3. Valued Columns Migration Arrangement
+- Take inventory of all legacy columns with non-empty values.
+- Plan to add corresponding columns (or store values in detail JSON) in the new system to retain these values; do not arbitrarily drop fields that have valid data records.
+4. Hierarchy ID Duplicate Check Logic
+- Include Hierarchy ID as part of the primary key rule for duplicate validation of physical models within the same dataset, to eliminate duplicate data risk after removing the legacy hierarchy folder structure.
+5. Hierarchy Table Migration Plan
+- Assess the migration scope and feasible solution for the Hierarchy table, and confirm its final storage form in the new system architecture.
+6. Field Attribute & Format Standardization
+- Extend the supported interface file type list to cover legacy formats (TXT, DAT, etc.), and add "quarterly" to the frequency enumeration.
+- Expand the length limit of File Name, File Description and Physical Model Path to fit the maximum length of existing legacy data.
+- Unify mixed and irregular legacy data types to the standard data type specification of the new system.
+7. Virtual Physical Model Type Conversion
+- Convert physical models marked as "virtual" type to actual type, with reference to the type of their corresponding interface.
+8. Virtual Dataset Creation Rule Implementation
+- Apply the virtual dataset creation logic (grouped by owner + physical model type) for data models that have no associated interface.
+9. Status Field Mapping Definition
+- Establish the mapping relationship between legacy status values (end success, update warning, update success, etc.) and the status enumeration in the new system.
