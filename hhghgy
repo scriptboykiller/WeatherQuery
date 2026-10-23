@@ -1,0 +1,21 @@
+一个model属于多个interface
+
+这个model怎么处理
+
+同时也也提到了有许多没有interface的model，我们要根据owner+type给他们创建虚拟dataset
+
+在这里面virtual的占比很多，我们除了让它有dataset，还有给它一个具体的type，不是virtual
+
+最终他们串联到了一起
+
+是不是virtual都没有interface，都是通过他的source和interface创建间接的关系？
+
+这部分到我们系统里，是不是要特殊处理，直接跨过source，直接和对应名字的interface关联，就是interface转成dataset，它转成actual model，然后直接关联？？特殊处理
+
+那original model怎么办？归谁？
+
+
+是不是virtual的都有source？是不是都没有直接喝interface关联？是不是source都有interface？我们希望数据都是规范化的，我们可以统一处理，不一样数据有太多不同的分布，这就很难。
+
+
+去问ai，但是别查数据库，只看现在的html的数据来回答。
